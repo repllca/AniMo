@@ -1,0 +1,1 @@
+CONFIG_PATH = r'./utils/config.yaml'
