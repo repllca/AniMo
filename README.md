@@ -22,7 +22,7 @@ Please follow the instructions in `./data_generation/README.md` to obtain the An
 
 # 🏋️‍♂️ Training AniMo Model
 
-You may also need to download evaluation models in `./text_mot_match/README.md` and glove files in `./glove/README.md` to run the scripts. ⚙️
+You may also need to download evaluation models in `./models/text_mot_match/README.md` and glove files in `./glove/README.md` to run the scripts. ⚙️
 
 ## 🔢 Train RVQ
 
