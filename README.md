@@ -1,16 +1,15 @@
 # 🐾 AniMo: Species-Aware Model for Text-Driven Animal Motion Generation (CVPR 2025) 🦁
 
-
-
 <!-- [![arXiv](https://img.shields.io/badge/arXiv-xxxx.xx-b31b1b.svg)](https://arxiv.org/abs/xxx.xxx) -->
+
 [![cvpr2025](https://img.shields.io/badge/🏆-CVPR%202025%20Main%20Conference-1b427d)](https://cvpr.thecvf.com/virtual/2025/poster/34318)
 [![cv4animal](https://img.shields.io/badge/🦁-CV4Animals%20Workshop%202025-brightgreen)](https://www.cv4animals.com/)
 ![Stars](https://img.shields.io/github/stars/WandererXX/AniMo)
 
-
 # 🚀 Getting Started
 
 ## 🛠️ Environment
+
 ```bash
 conda env create -f environment.yml
 conda activate animo
@@ -23,9 +22,10 @@ Please follow the instructions in `./data_generation/README.md` to obtain the An
 
 # 🏋️‍♂️ Training AniMo Model
 
-You may also need to download evaluation models to run the scripts. ⚙️
+You may also need to download evaluation models in `./text_mot_match/README.md` and glove files in `./glove/README.md` to run the scripts. ⚙️
 
 ## 🔢 Train RVQ
+
 ```bash
 python train_vq.py \
   --name rvq \
@@ -40,6 +40,7 @@ python train_vq.py \
 ```
 
 ## 🎭 Train Masked Transformer
+
 ```bash
 python train_t2m_transformer.py \
   --name mtrans \
@@ -51,6 +52,7 @@ python train_t2m_transformer.py \
 ```
 
 ## ➕ Train Residual Transformer
+
 ```bash
 python train_res_transformer.py \
   --name rtrans \
@@ -66,6 +68,7 @@ python train_res_transformer.py \
 # 📈 Evaluation
 
 ## 🔍 Evaluate RVQ Reconstruction:
+
 ```bash
 python eval_t2m_vq.py \
   --gpu_id 0 \
@@ -75,6 +78,7 @@ python eval_t2m_vq.py \
 ```
 
 ## ✨ Evaluate Text2motion Generation:
+
 ```bash
 python eval_t2m_trans_res.py \
   --res_name rtrans \
