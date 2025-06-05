@@ -92,7 +92,22 @@ python eval_t2m_trans_res.py \
   --checkpoints_dir ckpt/animo
 ```
 
+# 📚Citation
+
+```
+@InProceedings{Wang_2025_CVPR,
+    author    = {Wang, Xuan and Ruan, Kai and Zhang, Xing and Wang, Gaoang},
+    title     = {AniMo: Species-Aware Model for Text-Driven Animal Motion Generation},
+    booktitle = {Proceedings of the Computer Vision and Pattern Recognition Conference (CVPR)},
+    month     = {June},
+    year      = {2025},
+    pages     = {1929-1939}
+}
+```
+
+
+
 # 💖 Acknowlegements
 
 We sincerely thank the open-sourcing of these works where our code is based on:
-[MoMask](https://github.com/EricGuo5513/momask-codes), [Text-to-motion](https://github.com/EricGuo5513/text-to-motion), [AttT2M](https://github.com/ZcyMonkey/AttT2M), [HumanML3D](https://github.com/EricGuo5513/HumanML3D), and [T2M-GPT](https://github.com/Mael-zys/T2M-GPT).
+[MoMask](https://github.com/EricGuo5513/momask-codes), [Text-to-motion](https://github.com/EricGuo5513/text-to-motion), [AttT2M](https://github.com/ZcyMonkey/AttT2M), [HumanML3D](https://github.com/EricGuo5513/HumanML3D), [OmniMotionGPT](https://github.com/USRC-SEA/OmniMotionGPT) and [T2M-GPT](https://github.com/Mael-zys/T2M-GPT).
