@@ -3,6 +3,7 @@
 <!-- [![arXiv](https://img.shields.io/badge/arXiv-xxxx.xx-b31b1b.svg)](https://arxiv.org/abs/xxx.xxx) -->
 
 [![cvpr2025](https://img.shields.io/badge/🏆-CVPR%202025%20Main%20Conference-1b427d)](https://cvpr.thecvf.com/virtual/2025/poster/34318)
+[![cvpr2025paper](https://img.shields.io/badge/📃-Paper-b31b1b)](https://openaccess.thecvf.com/content/CVPR2025/papers/Wang_AniMo_Species-Aware_Model_for_Text-Driven_Animal_Motion_Generation_CVPR_2025_paper.pdf)
 [![cv4animal](https://img.shields.io/badge/🦁-CV4Animals%20Workshop%202025-brightgreen)](https://www.cv4animals.com/)
 ![Stars](https://img.shields.io/github/stars/WandererXX/AniMo)
 
