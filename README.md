@@ -96,17 +96,14 @@ python eval_t2m_trans_res.py \
 # 📚Citation
 
 ```
-@InProceedings{Wang_2025_CVPR,
-    author    = {Wang, Xuan and Ruan, Kai and Zhang, Xing and Wang, Gaoang},
-    title     = {AniMo: Species-Aware Model for Text-Driven Animal Motion Generation},
-    booktitle = {Proceedings of the Computer Vision and Pattern Recognition Conference (CVPR)},
-    month     = {June},
-    year      = {2025},
-    pages     = {1929-1939}
+@inproceedings{wang2025animo,
+  title={AniMo: Species-Aware Model for Text-Driven Animal Motion Generation},
+  author={Wang, Xuan and Ruan, Kai and Zhang, Xing and Wang, Gaoang},
+  booktitle={Proceedings of the Computer Vision and Pattern Recognition Conference},
+  pages={1929--1939},
+  year={2025}
 }
 ```
-
-
 
 # 💖 Acknowlegements
 
