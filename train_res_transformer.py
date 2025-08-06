@@ -5,8 +5,8 @@ import numpy as np
 from torch.utils.data import DataLoader
 from os.path import join as pjoin
 
-from models.mask_transformer.transformer import ResidualTransformer
-from models.mask_transformer.transformer_trainer import ResidualTransformerTrainer
+from models.transformer.transformer import ResidualTransformer
+from models.transformer.transformer_trainer import ResidualTransformerTrainer
 from models.vq.model import RVQVAE
 
 from options.train_option import TrainT2MOptions
@@ -45,7 +45,7 @@ def load_vq_model():
                 vq_opt.dilation_growth_rate,
                 vq_opt.vq_act,
                 vq_opt.vq_norm)
-    ckpt = torch.load(pjoin(vq_opt.checkpoints_dir,  vq_opt.name, 'model', 'net_best_fid.tar'),
+    ckpt = torch.load(pjoin(vq_opt.checkpoints_dir,  vq_opt.name, 'model', 'latest.tar'),
                             map_location=opt.device)
     model_key = 'vq_model' if 'vq_model' in ckpt else 'net'
     vq_model.load_state_dict(ckpt[model_key])
@@ -82,8 +82,6 @@ if __name__ == '__main__':
     opt.max_motion_length = 300
     kinematic_chain = animo_kinematic_chain
     dataset_opt_path = f'./{opt.checkpoints_dir}/{opt.vq_name}/opt.txt'
-
-    opt.text_dir = pjoin(opt.data_root, 'texts')
 
     vq_model, vq_opt = load_vq_model()
 

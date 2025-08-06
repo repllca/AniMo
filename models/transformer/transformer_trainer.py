@@ -6,15 +6,15 @@ from torch.utils.tensorboard import SummaryWriter
 from collections import OrderedDict
 from utils.utils import *
 from os.path import join as pjoin
-from utils.eval_t2m import evaluation_mask_transformer, evaluation_res_transformer
-from models.mask_transformer.tools import *
+from utils.eval_t2m import evaluation_base_transformer, evaluation_res_transformer
+from models.transformer.tools import *
 
 from einops import rearrange, repeat
 
 def def_value():
     return 0.0
 
-class MaskTransformerTrainer:
+class BaseTransformerTrainer:
     def __init__(self, args, t2m_transformer, vq_model):
         self.opt = args
         self.t2m_transformer = t2m_transformer
@@ -112,7 +112,7 @@ class MaskTransformerTrainer:
         print('Iters Per Epoch, Training: %04d, Validation: %03d' % (len(train_loader), len(val_loader)))
         logs = defaultdict(def_value, OrderedDict())
 
-        best_fid, best_div, best_top1, best_top2, best_top3, best_matching, writer = evaluation_mask_transformer(
+        best_fid, best_div, best_top1, best_top2, best_top3, best_matching, writer = evaluation_base_transformer(
             self.opt.save_root, eval_val_loader, self.t2m_transformer, self.vq_model, self.logger, epoch,
             best_fid=100, best_div=100,
             best_top1=0, best_top2=0, best_top3=0,
@@ -173,7 +173,7 @@ class MaskTransformerTrainer:
                 self.save(pjoin(self.opt.model_dir, 'net_best_acc.tar'), epoch, it)
                 best_acc = np.mean(val_acc)
 
-            best_fid, best_div, best_top1, best_top2, best_top3, best_matching, writer = evaluation_mask_transformer(
+            best_fid, best_div, best_top1, best_top2, best_top3, best_matching, writer = evaluation_base_transformer(
                 self.opt.save_root, eval_val_loader, self.t2m_transformer, self.vq_model, self.logger, epoch, best_fid=best_fid,
                 best_div=best_div, best_top1=best_top1, best_top2=best_top2, best_top3=best_top3,
                 best_matching=best_matching, eval_wrapper=eval_wrapper,

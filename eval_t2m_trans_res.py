@@ -3,7 +3,7 @@ from os.path import join as pjoin
 
 import torch
 
-from models.mask_transformer.transformer import MaskTransformer, ResidualTransformer
+from models.transformer.transformer import BaseTransformer, ResidualTransformer
 from models.vq.model import RVQVAE
 
 from options.eval_option import EvalT2MOptions
@@ -29,7 +29,7 @@ def load_vq_model(vq_opt):
                 vq_opt.dilation_growth_rate,
                 vq_opt.vq_act,
                 vq_opt.vq_norm)
-    ckpt = torch.load(pjoin(vq_opt.checkpoints_dir, vq_opt.name, 'model', 'net_best_fid.tar'),
+    ckpt = torch.load(pjoin(vq_opt.checkpoints_dir, vq_opt.name, 'model', 'latest.tar'),
                             map_location=opt.device)
     model_key = 'vq_model' if 'vq_model' in ckpt else 'net'
     vq_model.load_state_dict(ckpt[model_key])
@@ -37,7 +37,7 @@ def load_vq_model(vq_opt):
     return vq_model, vq_opt
 
 def load_trans_model(model_opt, which_model):
-    t2m_transformer = MaskTransformer(code_dim=model_opt.code_dim,
+    t2m_transformer = BaseTransformer(code_dim=model_opt.code_dim,
                                       cond_mode='text',
                                       latent_dim=model_opt.latent_dim,
                                       ff_size=model_opt.ff_size,
@@ -55,7 +55,7 @@ def load_trans_model(model_opt, which_model):
     missing_keys, unexpected_keys = t2m_transformer.load_state_dict(ckpt[model_key], strict=False)
     assert len(unexpected_keys) == 0
     assert all([k.startswith('clip_model.') for k in missing_keys])
-    print(f'Loading Mask Transformer {opt.name} from epoch {ckpt["ep"]}!')
+    print(f'Loading Base Transformer {opt.name} from epoch {ckpt["ep"]}!')
     return t2m_transformer
 
 def load_res_model(res_opt):
@@ -155,7 +155,7 @@ if __name__ == '__main__':
         for i in range(repeat_time):
             with torch.no_grad():
                 best_fid, best_div, Rprecision, best_matching, best_mm = \
-                    eval_t2m.evaluation_mask_transformer_test_plus_res(eval_val_loader, vq_model, res_model, t2m_transformer,
+                    eval_t2m.evaluation_base_transformer_test_plus_res(eval_val_loader, vq_model, res_model, t2m_transformer,
                                                                     i, eval_wrapper=eval_wrapper,
                                                                     time_steps=opt.time_steps, cond_scale=opt.cond_scale,
                                                                     temperature=opt.temperature, topkr=opt.topkr,

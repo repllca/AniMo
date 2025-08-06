@@ -9,7 +9,7 @@ import codecs as cs
 
 
 def collate_fn(batch):
-    batch.sort(key=lambda x: x[3], reverse=True)
+    batch.sort(key=lambda x: x[5], reverse=True)
     return default_collate(batch)
 
 class MotionDataset(data.Dataset):
@@ -122,12 +122,9 @@ class Text2MotionDatasetEval(data.Dataset):
         with cs.open(split_file, 'r') as f:
             for line in f.readlines():
                 id_list.append(line.strip())
-        # id_list = id_list[:250]
-
         new_name_list = []
         length_list = []
         for name in tqdm(id_list):  
-            # try:
             motion = np.load(pjoin(opt.motion_dir, name + '.npy'))
             text_data = []
             flag = False
@@ -285,8 +282,6 @@ class Text2MotionDataset(data.Dataset):
                     else:
                         try:
                             n_motion = motion[int(f_tag*20) : int(to_tag*20)]
-                            # if (len(n_motion)) < min_motion_len or (len(n_motion) >= 200):
-                            #     continue
                             new_name = random.choice('ABCDEFGHIJKLMNOPQRSTUVW') + '_' + name
                             while new_name in data_dict:
                                 new_name = random.choice('ABCDEFGHIJKLMNOPQRSTUVW') + '_' + name

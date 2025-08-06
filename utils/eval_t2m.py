@@ -23,9 +23,6 @@ def evaluation_vqvae(out_dir, val_loader, net, writer, ep, best_fid, best_div, b
     matching_score_real = 0
     matching_score_pred = 0
     for batch in val_loader:
-        # print(len(batch))
-        # word_embeddings, pos_one_hots, caption, sent_len, motion, m_length, token = batch
-        
         word_embeddings, pos_one_hots, species,gender,clip_text, sent_len, motion, m_length, token = batch
 
         motion = motion.cuda()
@@ -233,8 +230,6 @@ def evaluation_vqvae_plus_l1(val_loader, net, repeat_id, eval_wrapper, num_joint
         for i in range(bs):
             gt = recover_from_ric(torch.from_numpy(bgt[i, :m_length[i]]).float(), num_joint)
             pred = recover_from_ric(torch.from_numpy(bpred[i, :m_length[i]]).float(), num_joint)
-            # gt = motion[i, :m_length[i]]
-            # pred = pred_pose_eval[i, :m_length[i]]
             num_pose = gt.shape[0]
             l1_dist += F.l1_loss(gt, pred) * num_pose
             num_poses += num_pose
@@ -372,7 +367,7 @@ def evaluation_res_plus_l1(val_loader, vq_model, res_model, repeat_id, eval_wrap
     return fid, diversity, R_precision, matching_score_pred, l1_dist
 
 @torch.no_grad()
-def evaluation_mask_transformer(out_dir, val_loader, trans, vq_model, writer, ep, best_fid, best_div,
+def evaluation_base_transformer(out_dir, val_loader, trans, vq_model, writer, ep, best_fid, best_div,
                            best_top1, best_top2, best_top3, best_matching, eval_wrapper, plot_func,
                            save_ckpt=False, save_anim=False):
 
@@ -383,8 +378,6 @@ def evaluation_mask_transformer(out_dir, val_loader, trans, vq_model, writer, ep
             del t2m_trans_state_dict[e]
         state = {
             't2m_transformer': t2m_trans_state_dict,
-            # 'opt_t2m_transformer': self.opt_t2m_transformer.state_dict(),
-            # 'scheduler':self.scheduler.state_dict(),
             'ep': ep,
         }
         torch.save(state, file_name)
@@ -402,17 +395,10 @@ def evaluation_mask_transformer(out_dir, val_loader, trans, vq_model, writer, ep
     
     cond_scale = 4
 
-    # print(num_quantizer)
-
-    # assert num_quantizer >= len(time_steps) and num_quantizer >= len(cond_scales)
 
     nb_sample = 0
-    # for i in range(1):
     for batch in val_loader:
         word_embeddings, pos_one_hots, species,gender,clip_text, sent_len, pose, m_length, token = batch
-        # print('~~~~dataset eval:',type(clip_text),type(species),type(gender))
-        # <class 'str'> <class 'str'> <class 'str'>
-        # return word_embeddings, pos_one_hots,species,gender, caption, sent_len, motion, m_length, '_'.join(tokens)
         
         m_length = m_length.cuda()
 
@@ -525,8 +511,6 @@ def evaluation_res_transformer(out_dir, val_loader, trans, vq_model, writer, ep,
             del res_trans_state_dict[e]
         state = {
             'res_transformer': res_trans_state_dict,
-            # 'opt_t2m_transformer': self.opt_t2m_transformer.state_dict(),
-            # 'scheduler':self.scheduler.state_dict(),
             'ep': ep,
         }
         torch.save(state, file_name)
@@ -541,19 +525,14 @@ def evaluation_res_transformer(out_dir, val_loader, trans, vq_model, writer, ep,
     matching_score_real = 0
     matching_score_pred = 0
 
-    # print(num_quantizer)
-
-    # assert num_quantizer >= len(time_steps) and num_quantizer >= len(cond_scales)
 
     nb_sample = 0
-    # for i in range(1):
     for batch in val_loader:
         word_embeddings, pos_one_hots,species,gender, clip_text, sent_len, pose, m_length, token = batch
         m_length = m_length.cuda().long()
         pose = pose.cuda().float()
 
         bs, seq = pose.shape[:2]
-        # num_joints = 21 if pose.shape[-1] == 251 else 22
 
         code_indices, all_codes = vq_model.encode(species,gender,pose)
         # (b, seqlen)
@@ -562,12 +541,8 @@ def evaluation_res_transformer(out_dir, val_loader, trans, vq_model, writer, ep,
         else:
             pred_ids = trans.generate(code_indices[..., 0], clip_text,species,gender, m_length//4,
                                       temperature=temperature, cond_scale=cond_scale)
-            # print('pred_ids111:',pred_ids.shape)    #
-            
-            # pred_codes = trans(code_indices[..., 0], clip_text, m_length//4, force_mask=force_mask)
 
-        pred_motions = vq_model.forward_decoder(pred_ids)   #([32, 75, 3])
-        # print('pred_motion:',pred_motions.shape)    # ([32, 300, 359]
+        pred_motions = vq_model.forward_decoder(pred_ids)  
         et_pred, em_pred = eval_wrapper.get_co_embeddings(word_embeddings, pos_one_hots, sent_len, pred_motions.clone(),
                                                           m_length)
 
@@ -677,29 +652,20 @@ def evaluation_res_transformer_plus_l1(val_loader, vq_model, trans, repeat_id, e
     matching_score_real = 0
     matching_score_pred = 0
 
-    # print(num_quantizer)
-
-    # assert num_quantizer >= len(time_steps) and num_quantizer >= len(cond_scales)
 
     nb_sample = 0
     l1_dist = 0
     num_poses = 1
-    # for i in range(1):
     for batch in val_loader:
         word_embeddings, pos_one_hots, clip_text, sent_len, pose, m_length, token = batch
         m_length = m_length.cuda().long()
         pose = pose.cuda().float()
 
         bs, seq = pose.shape[:2]
-        # num_joints = 21 if pose.shape[-1] == 251 else 22
-
         code_indices, all_codes = vq_model.encode(pose)
-        # print(code_indices[0:2, :, 1])
 
         pred_ids = trans.generate(code_indices[..., 0], clip_text, m_length//4, topk_filter_thres=topkr,
                                   temperature=temperature, cond_scale=cond_scale)
-            # pred_codes = trans(code_indices[..., 0], clip_text, m_length//4, force_mask=force_mask)
-
         pred_motions = vq_model.forward_decoder(pred_ids)
 
         if cal_l1:
@@ -708,8 +674,6 @@ def evaluation_res_transformer_plus_l1(val_loader, vq_model, trans, repeat_id, e
             for i in range(bs):
                 gt = recover_from_ric(torch.from_numpy(bgt[i, :m_length[i]]).float(), num_joint)
                 pred = recover_from_ric(torch.from_numpy(bpred[i, :m_length[i]]).float(), num_joint)
-                # gt = motion[i, :m_length[i]]
-                # pred = pred_pose_eval[i, :m_length[i]]
                 num_pose = gt.shape[0]
                 l1_dist += F.l1_loss(gt, pred) * num_pose
                 num_poses += num_pose
@@ -760,7 +724,7 @@ def evaluation_res_transformer_plus_l1(val_loader, vq_model, trans, repeat_id, e
 
 
 @torch.no_grad()
-def evaluation_mask_transformer_test(val_loader, vq_model, trans, repeat_id, eval_wrapper,
+def evaluation_base_transformer_test(val_loader, vq_model, trans, repeat_id, eval_wrapper,
                                 time_steps, cond_scale, temperature, topkr, gsample=True, force_mask=False, cal_mm=True):
     trans.eval()
     vq_model.eval()
@@ -786,9 +750,6 @@ def evaluation_mask_transformer_test(val_loader, vq_model, trans, repeat_id, eva
         m_length = m_length.cuda()
 
         bs, seq = pose.shape[:2]
-        # num_joints = 21 if pose.shape[-1] == 251 else 22
-
-        # for i in range(mm_batch)
         if i < num_mm_batch:
         # (b, seqlen, c)
             motion_multimodality_batch = []
@@ -797,13 +758,11 @@ def evaluation_mask_transformer_test(val_loader, vq_model, trans, repeat_id, eva
                                       temperature=temperature, topk_filter_thres=topkr,
                                       gsample=gsample, force_mask=force_mask)
 
-                # motion_codes = motion_codes.permute(0, 2, 1)
                 mids.unsqueeze_(-1)
                 pred_motions = vq_model.forward_decoder(mids)
 
                 et_pred, em_pred = eval_wrapper.get_co_embeddings(word_embeddings, pos_one_hots, sent_len, pred_motions.clone(),
                                                                   m_length)
-                # em_pred = em_pred.unsqueeze(1)  #(bs, 1, d)
                 motion_multimodality_batch.append(em_pred.unsqueeze(1))
             motion_multimodality_batch = torch.cat(motion_multimodality_batch, dim=1) #(bs, 30, d)
             motion_multimodality.append(motion_multimodality_batch)
@@ -812,7 +771,6 @@ def evaluation_mask_transformer_test(val_loader, vq_model, trans, repeat_id, eva
                                   temperature=temperature, topk_filter_thres=topkr,
                                   force_mask=force_mask)
 
-            # motion_codes = motion_codes.permute(0, 2, 1)
             mids.unsqueeze_(-1)
             pred_motions = vq_model.forward_decoder(mids)
 
@@ -867,7 +825,7 @@ def evaluation_mask_transformer_test(val_loader, vq_model, trans, repeat_id, eva
 
 
 @torch.no_grad()
-def evaluation_mask_transformer_test_plus_res(val_loader, vq_model, res_model, trans, repeat_id, eval_wrapper,
+def evaluation_base_transformer_test_plus_res(val_loader, vq_model, res_model, trans, repeat_id, eval_wrapper,
                                 time_steps, cond_scale, temperature, topkr, gsample=True, force_mask=False,
                                               cal_mm=True, res_cond_scale=5):
     trans.eval()
@@ -894,9 +852,6 @@ def evaluation_mask_transformer_test_plus_res(val_loader, vq_model, res_model, t
         m_length = m_length.cuda()
 
         bs, seq = pose.shape[:2]
-        # num_joints = 21 if pose.shape[-1] == 251 else 22
-
-        # for i in range(mm_batch)
         if i < num_mm_batch:
         # (b, seqlen, c)
             motion_multimodality_batch = []
@@ -905,20 +860,12 @@ def evaluation_mask_transformer_test_plus_res(val_loader, vq_model, res_model, t
                                       temperature=temperature, topk_filter_thres=topkr,
                                       gsample=gsample, force_mask=force_mask)
 
-                # motion_codes = motion_codes.permute(0, 2, 1)
-                # mids.unsqueeze_(-1)
                 pred_ids = res_model.generate(mids, clip_text,species,gender, m_length // 4, temperature=1, cond_scale=res_cond_scale)
-                # pred_codes = trans(code_indices[..., 0], clip_text, m_length//4, force_mask=force_mask)
-                # pred_ids = torch.where(pred_ids==-1, 0, pred_ids)
 
                 pred_motions = vq_model.forward_decoder(pred_ids)
 
-                # pred_motions = vq_model.decoder(codes)
-                # pred_motions = vq_model.forward_decoder(mids)
-
                 et_pred, em_pred = eval_wrapper.get_co_embeddings(word_embeddings, pos_one_hots, sent_len, pred_motions.clone(),
                                                                   m_length)
-                # em_pred = em_pred.unsqueeze(1)  #(bs, 1, d)
                 motion_multimodality_batch.append(em_pred.unsqueeze(1))
             motion_multimodality_batch = torch.cat(motion_multimodality_batch, dim=1) #(bs, 30, d)
             motion_multimodality.append(motion_multimodality_batch)
@@ -927,15 +874,8 @@ def evaluation_mask_transformer_test_plus_res(val_loader, vq_model, res_model, t
                                   temperature=temperature, topk_filter_thres=topkr,
                                   force_mask=force_mask)
 
-            # motion_codes = motion_codes.permute(0, 2, 1)
-            # mids.unsqueeze_(-1)
             pred_ids = res_model.generate(mids, clip_text,species,gender, m_length // 4, temperature=1, cond_scale=res_cond_scale)
-            # pred_codes = trans(code_indices[..., 0], clip_text, m_length//4, force_mask=force_mask)
-            # pred_ids = torch.where(pred_ids == -1, 0, pred_ids)
-
             pred_motions = vq_model.forward_decoder(pred_ids)
-            # pred_motions = vq_model.forward_decoder(mids)
-
             et_pred, em_pred = eval_wrapper.get_co_embeddings(word_embeddings, pos_one_hots, sent_len,
                                                               pred_motions.clone(),
                                                               m_length)

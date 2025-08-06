@@ -40,7 +40,7 @@ python train_vq.py \
   --checkpoints_dir ckpt/animo
 ```
 
-## 🎭 Train Masked Transformer
+## 🎭 Train Base Transformer
 
 ```bash
 python train_t2m_transformer.py \

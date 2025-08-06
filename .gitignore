@@ -1,0 +1,7 @@
+ckpt/
+AniMo4D/
+*.npy
+*.txt
+*.gif
+*.tar
+*.zip

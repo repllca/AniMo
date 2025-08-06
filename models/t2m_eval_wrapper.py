@@ -129,7 +129,7 @@ class EvaluatorWrapper(object):
             'max_text_len': 20,
             'dim_text_hidden': 512,
             'dim_coemb_hidden': 512,
-            'dim_pose': 263 if dataset_name == 'humanml' else 251,
+            'dim_pose': 359,
             'dim_movement_enc_hidden': 512,
             'dim_movement_latent': 512,
             'checkpoints_dir': './checkpoints',

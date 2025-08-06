@@ -1,7 +1,6 @@
 import torch
 import torch.nn as nn
 import numpy as np
-# from networks.layers import *
 import torch.nn.functional as F
 import clip
 from einops import rearrange, repeat
@@ -11,7 +10,7 @@ from tqdm.auto import tqdm
 from typing import Callable, Optional, List, Dict
 from copy import deepcopy
 from functools import partial
-from models.mask_transformer.tools import *
+from models.transformer.tools import *
 from torch.distributions.categorical import Categorical
 
 class InputProcess(nn.Module):
@@ -22,14 +21,11 @@ class InputProcess(nn.Module):
         self.poseEmbedding = nn.Linear(self.input_feats, self.latent_dim)
 
     def forward(self, x):
-        # [bs, ntokens, input_feats]
-        x = x.permute((1, 0, 2)) # [seqen, bs, input_feats]
-        # print(x.shape)
+        x = x.permute((1, 0, 2)) 
         x = self.poseEmbedding(x)  # [seqlen, bs, d]
         return x
 
 class PositionalEncoding(nn.Module):
-    #Borrow from MDM, the same as above, but add dropout, exponential may improve precision
     def __init__(self, d_model, dropout=0.1, max_len=5000):
         super(PositionalEncoding, self).__init__()
         self.dropout = nn.Dropout(p=dropout)
@@ -39,12 +35,10 @@ class PositionalEncoding(nn.Module):
         div_term = torch.exp(torch.arange(0, d_model, 2).float() * (-np.log(10000.0) / d_model))
         pe[:, 0::2] = torch.sin(position * div_term)
         pe[:, 1::2] = torch.cos(position * div_term)
-        pe = pe.unsqueeze(0).transpose(0, 1) #[max_len, 1, d_model]
 
         self.register_buffer('pe', pe)
 
     def forward(self, x):
-        # not used in the final model
         x = x + self.pe[:x.shape[0], :]
         return self.dropout(x)
 
@@ -81,11 +75,11 @@ class OutputProcess(nn.Module):
         return output
 
 
-class MaskTransformer(nn.Module):
+class BaseTransformer(nn.Module):
     def __init__(self, code_dim, cond_mode, latent_dim=256, ff_size=1024, num_layers=8,
                  num_heads=4, dropout=0.1, clip_dim=512, cond_drop_prob=0.1,
                  clip_version=None, opt=None, **kargs):
-        super(MaskTransformer, self).__init__()
+        super(BaseTransformer, self).__init__()
         print(f'latent_dim: {latent_dim}, ff_size: {ff_size}, nlayers: {num_layers}, nheads: {num_heads}, dropout: {dropout}')
 
         self.code_dim = code_dim
@@ -129,7 +123,6 @@ class MaskTransformer(nn.Module):
             raise KeyError("Unsupported condition mode!!!")
 
 
-        _num_tokens = opt.num_tokens + 2  # two dummy tokens, one for masking, one for padding
         self.mask_id = opt.num_tokens
         self.pad_id = opt.num_tokens + 1
 
@@ -159,8 +152,6 @@ class MaskTransformer(nn.Module):
         c, d = codebook.shape
         self.token_emb.weight = nn.Parameter(torch.cat([codebook, torch.zeros(size=(2, d), device=codebook.device)], dim=0)) #add two dummy tokens, 0 vectors
         self.token_emb.requires_grad_(False)
-        # self.token_emb.weight.requires_grad = False
-        # self.token_emb_ready = True
         print("Token embedding initialized!")
 
     def __init_weights(self, module):
@@ -198,7 +189,6 @@ class MaskTransformer(nn.Module):
         return feat_clip_text
 
     def mask_cond(self, cond, force_mask=False):
-        # print(cond.shape)
         bs, d =  cond.shape
         if force_mask:
             return torch.zeros_like(cond)
@@ -271,10 +261,8 @@ class MaskTransformer(nn.Module):
         # Positions to be MASKED are ALL TRUE
         mask = batch_randperm < num_token_masked.unsqueeze(-1)
 
-        # Positions to be MASKED must also be NON-PADDED
         mask &= non_pad_mask
 
-        # Note this is our training target, not input
         labels = torch.where(mask, ids, self.mask_id)
 
         x_ids = ids.clone()
@@ -331,8 +319,6 @@ class MaskTransformer(nn.Module):
                  gsample=False,
                  force_mask=False
                  ):
-        # print(self.opt.num_quantizers)
-        # assert len(timesteps) >= len(cond_scales) == self.opt.num_quantizers
 
         device = next(self.parameters()).device
         seq_len = max(m_lens)
@@ -351,9 +337,6 @@ class MaskTransformer(nn.Module):
             raise NotImplementedError("Unsupported condition mode!!!")
 
         padding_mask = ~lengths_to_mask(m_lens, seq_len)
-        # print(padding_mask.shape, )
-
-        # Start from all tokens being masked
         ids = torch.where(padding_mask, self.pad_id, self.mask_id)
         scores = torch.where(padding_mask, 1e5, 0.)
         starting_temperature = temperature
@@ -385,7 +368,6 @@ class MaskTransformer(nn.Module):
                                                   force_mask=force_mask)
 
             logits = logits.permute(0, 2, 1)  # (b, seqlen, ntoken)
-            # print(logits.shape, self.opt.num_tokens)
             # clean low prob token
             filtered_logits = top_k(logits, topk_filter_thres, dim=-1)
 
@@ -399,8 +381,6 @@ class MaskTransformer(nn.Module):
                 probs = F.softmax(filtered_logits / temperature, dim=-1)  # (b, seqlen, ntoken)
                 pred_ids = Categorical(probs).sample()  # (b, seqlen)
 
-            # print(pred_ids.max(), pred_ids.min())
-            # if pred_ids.
             ids = torch.where(is_mask, pred_ids, ids)
 
             '''

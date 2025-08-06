@@ -5,8 +5,8 @@ import numpy as np
 from torch.utils.data import DataLoader
 from os.path import join as pjoin
 
-from models.mask_transformer.transformer import MaskTransformer
-from models.mask_transformer.transformer_trainer import MaskTransformerTrainer
+from models.transformer.transformer import BaseTransformer
+from models.transformer.transformer_trainer import BaseTransformerTrainer
 from models.vq.model import RVQVAE
 
 from options.train_option import TrainT2MOptions
@@ -48,7 +48,7 @@ def load_vq_model():
                 vq_opt.dilation_growth_rate,
                 vq_opt.vq_act,
                 vq_opt.vq_norm)
-    ckpt = torch.load(pjoin(vq_opt.checkpoints_dir, vq_opt.name, 'model', 'net_best_fid.tar'),
+    ckpt = torch.load(pjoin(vq_opt.checkpoints_dir, vq_opt.name, 'model', 'latest.tar'),
                             map_location='cpu')
     model_key = 'vq_model' if 'vq_model' in ckpt else 'net'
     vq_model.load_state_dict(ckpt[model_key])
@@ -83,7 +83,6 @@ if __name__ == '__main__':
     kinematic_chain = animo_kinematic_chain
     dataset_opt_path = f'./{opt.checkpoints_dir}/{opt.vq_name}/opt.txt'
     print('Dataset opt path:', dataset_opt_path)
-    opt.text_dir = pjoin(opt.data_root, 'texts')
 
     vq_model, vq_opt = load_vq_model()
 
@@ -91,7 +90,7 @@ if __name__ == '__main__':
 
     opt.num_tokens = vq_opt.nb_code
 
-    t2m_transformer = MaskTransformer(code_dim=vq_opt.code_dim,
+    t2m_transformer = BaseTransformer(code_dim=vq_opt.code_dim,
                                       cond_mode='text',
                                       latent_dim=opt.latent_dim,
                                       ff_size=opt.ff_size,
@@ -125,6 +124,6 @@ if __name__ == '__main__':
     wrapper_opt = get_opt(dataset_opt_path, torch.device('cuda'))
     eval_wrapper = EvaluatorModelWrapper(wrapper_opt)
 
-    trainer = MaskTransformerTrainer(opt, t2m_transformer, vq_model)
+    trainer = BaseTransformerTrainer(opt, t2m_transformer, vq_model)
 
     trainer.train(train_loader, val_loader, eval_val_loader, eval_wrapper=eval_wrapper, plot_eval=plot_t2m)

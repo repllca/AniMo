@@ -406,12 +406,7 @@ def plot_3d_motion(save_path, kinematic_tree, joints, title, figsize=(10, 10), f
         ax.set_zticklabels([])
 
     ani = FuncAnimation(fig, update, frames=frame_number, interval=1000 / fps, repeat=False)
-    # ani.save(save_path, fps=fps, extra_args=['-vcodec', 'mpeg2video'])
     ani.save(save_path, writer='pillow', fps=fps)
-    
-    # ani = FuncAnimation(fig, update, frames=frame_number, interval=1000 / fps, repeat=False)
-
-    # ani.save(save_path, fps=fps)
     plt.close()
 
 

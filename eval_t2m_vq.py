@@ -50,11 +50,9 @@ if __name__ == "__main__":
     wrapper_opt = get_opt(dataset_opt_path, torch.device('cuda'))
     eval_wrapper = EvaluatorModelWrapper(wrapper_opt)
 
-    ##### ---- Dataloader ---- #####
     args.nb_joints = 30
     dim_pose = 359
     eval_val_loader, _ = get_dataset_motion_loader(dataset_opt_path, 32, 'test', device=args.device)
-    ##### ---- Network ---- #####
     vq_opt_path = pjoin(args.checkpoints_dir,  args.name, 'opt.txt')
     vq_opt = get_opt(vq_opt_path, device=args.device)
 
