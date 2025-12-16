@@ -4,15 +4,15 @@ Game Version=Build ID 14307171
 [Steam] -> [Ovl files]
 """
 ################################################################################
-root_dir = r"D:\softwares\steam\steamapps\common\[Replace with your game]\win64\ovldata"  # <---- Replace yourself
 export_dir = r"D:\xxx\export_ovl_loop"  # <------ Replace yourself
+root_dir = r"D:\softwares\steam\steamapps\common\[Replace with your game]\win64\ovldata"  # <---- Replace yourself
 ################################################################################
 
 import os
 from pathlib import Path
 from modules import walker
-from generated.formats.ovl import OvlFile
 from generated.formats.ovl_base.enums.Compression import Compression
+from generated.formats.ovl import OvlFile
 import time
 
 def extract_assets_from_ovl(ovl_path, export_dir, only_types=[]):
