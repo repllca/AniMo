@@ -1,0 +1,7 @@
+{
+  "generator": "AniMoLite",
+  "device": "cpu",
+  "T": 120,
+  "text_dim": 256,
+  "note": "demo inference"
+}
